@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-commit-job
+spec:
+  activeDeadlineSeconds: 60
+  parallelism: 1
+  completions: 1
+  backoffLimit: 1
+  template:
+    metadata:
+      name: test-commit-job
+    spec:
+      serviceAccountName: commit-trigger
+      restartPolicy: Never
+      containers:
+        - name: commit-trigger
+          image: quay.io/rhtuser/commit-trigger:v1.1
+          env:
+            - name: BUILDCONFIG
+              value: php-hello

@@ -1,0 +1,69 @@
+---
+- name: Authenticate first.
+  hosts: localhost
+  gather_facts: no
+  vars:
+    api_endpoint: https://api.ocp4.example.com:6443
+  vars_prompt:
+    - name: username
+      prompt: "OpenShift username"
+      private: no
+    - name: password
+      prompt: "OpenShift password"
+  tasks:
+    - name: Get an authentication token
+      k8s_auth:
+        host: "{{ api_endpoint }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: false
+      register: ocp_auth
+
+- name: Make sure the application exists in 5 replicas
+  hosts: localhost
+  gather_facts: no
+  vars:
+    api_endpoint: https://api.ocp4.example.com:6443
+    project: foobar
+    application: php-hello
+  module_defaults:
+    group/k8s:
+      namespace: "{{ project }}"
+      api_key: "{{ ocp_auth.k8s_auth.api_key }}"
+      host: "{{ api_endpoint }}"
+      validate_certs: false
+  tasks:
+    - name: Make sure the project exists
+      k8s:
+        api_version: v1
+        kind: Namespace
+        namespace: ""
+        name: "{{ project }}"
+        state: present
+
+    - name: Get info about the chosen DC
+      k8s_info:
+        kind: DeploymentConfig
+        name: "{{ application }}"
+      register: app_state
+
+    - name: Fail if DC does not exist
+      fail:
+        msg: The application {{ application }} is not deployed!
+      when: app_state.resources[0] is not defined
+
+    # XXX The below has issues with python3-openshift > 0.8 XXX
+    #- name: Make sure the app is running in 5 instances
+    #  k8s_scale:
+    #    kind: DeploymentConfig
+    #    name: "{{ application }}"
+    #    replicas: 5
+    # This works regardless of python3-openshift module
+    - name: Make sure the app is running in 5 instances
+      k8s:
+        kind: DeploymentConfig
+        name: "{{ application }}"
+        resource_definition:
+          spec:
+            replicas: 5
+...

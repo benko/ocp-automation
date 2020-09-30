@@ -1,0 +1,24 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: test-commit-cronjob
+spec:
+  schedule: "*/5 * * * 1-4"
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 60
+      parallelism: 1
+      completions: 1
+      backoffLimit: 1
+      template:
+        metadata:
+          name: test-commit-job
+        spec:
+          serviceAccountName: commit-trigger
+          restartPolicy: Never
+          containers:
+            - name: commit-trigger
+              image: quay.io/rhtuser/commit-trigger:v1.1
+              env:
+                - name: BUILDCONFIG
+                  value: php-hello
