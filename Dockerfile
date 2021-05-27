@@ -12,7 +12,7 @@ ENV	CLUSTER= \
 	TOKEN_SECRET_FILE= \
 	BUILDCONFIG=
 
-LABEL description='Checks that remote and last build's commit ID are the same, or starts a new build otherwise. Requires BUILDCONFIG to be set in env.'
+LABEL description 'Checks that remote and last build's commit ID are the same, or starts a new build otherwise. Requires BUILDCONFIG to be set in env.'
 
 MAINTAINER gbremec@redhat.com
 
