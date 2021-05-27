@@ -15,12 +15,12 @@ DEPLOYER_STATUS="$(oc get pod ${DEPLOYER} -o jsonpath='{.status.phase}')"
 echo "The state of DC called ${DEPLOYMENTCONFIG} (and its deployer pod, ${DEPLOYER}) is currently ${DEPLOYER_STATUS}."
 
 # wait for it to complete if not yet there
-if [ "${DEPLOYER_STATUS}" != "Running" ] && [ "${DEPLOYER_STATUS}" != "Pending" ]; then
+if [ "${DEPLOYER_STATUS}" != "Running" ] && [ "${DEPLOYER_STATUS}" != "Pending" ] && [ "${DEPLOYER_STATUS}" != "Unknown" ]; then
 	echo "Nothing to wait for."
 	exit 0
 fi
 
-while [ "${DEPLOYER_STATUS}" = "Running" ] || [ "${DEPLOYER_STATUS}" = "Pending" ]; do
+while [ "${DEPLOYER_STATUS}" = "Running" ] || [ "${DEPLOYER_STATUS}" = "Pending" ] || [ "${DEPLOYER_STATUS}" = "Unknown" ]; do
 	echo "Waiting..."
 	sleep 1
 
